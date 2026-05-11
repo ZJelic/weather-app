@@ -19,22 +19,7 @@ spring:
       enabled: true
       path: /h2-console
 
-  # Redis Configuration (Production)
-  data:
-    redis:
-      host: ${REDIS_HOST:localhost}
-      port: ${REDIS_PORT:6379}
-      # password: ${REDIS_PASSWORD:}  # ← COMMENTED OUT - Add when ready
-      timeout: 2000ms
-      lettuce:
-        pool:
-          max-active: 10
-          max-idle: 5
-          min-idle: 2
-
   # Cache Configuration
-  # CHANGED: Removed duplicate cache.type at root level
-  # Now only defined in profiles below
   cache:
     caffeine:
       spec: maximumSize=1000,expireAfterWrite=300s
@@ -65,6 +50,13 @@ resilience4j:
         retry-exceptions:
           - org.springframework.web.reactive.function.client.WebClientResponseException
           - java.net.SocketTimeoutException
+  ratelimiter:
+    instances:
+      weather-api:
+        limit-for-period: 5
+        limit-refresh-period: 60s
+        timeout-duration: 5s
+        register-health-indicator: true
 
 management:
   endpoints:
@@ -86,7 +78,6 @@ logging:
   pattern:
     console: "%d{ISO8601} [%thread] %-5level [%X{correlationId}] %logger{36} - %msg%n"
 
-# CHANGED: Simplified profiles - only cache type differs
 ---
 spring:
   config:
@@ -94,7 +85,6 @@ spring:
       on-profile: dev
   cache:
     type: caffeine  # No Redis, in-memory only
-
 ---
 spring:
   config:
@@ -104,5 +94,12 @@ spring:
     type: redis     # Use Redis cache
   data:
     redis:
-      host: ${REDIS_HOST:localhost}  # CHANGED: Default to 'localhost' for test
+      host: ${REDIS_HOST:localhost}
       port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      timeout: 2000ms
+      lettuce:
+        pool:
+          max-active: 10
+          max-idle: 5
+          min-idle: 2

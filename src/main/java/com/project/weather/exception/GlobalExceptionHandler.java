@@ -11,6 +11,7 @@ import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import java.time.LocalDateTime;
+import io.github.resilience4j.ratelimiter.RequestNotPermitted;
 
 @RestControllerAdvice
 @Slf4j
@@ -109,5 +110,23 @@ public class GlobalExceptionHandler {
                 .build();
 
         return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(error);
+    }
+
+    @ExceptionHandler(RequestNotPermitted.class)
+    public ResponseEntity<ErrorResponse> handleRateLimiter(
+            RequestNotPermitted ex,
+            HttpServletRequest request) {
+
+        log.warn("Rate limit exceeded for: {}", request.getRequestURI());
+
+        ErrorResponse error = ErrorResponse.builder()
+                .status(HttpStatus.TOO_MANY_REQUESTS.getReasonPhrase())
+                .statusCode(HttpStatus.TOO_MANY_REQUESTS.value())
+                .message("Too many requests. Please try again later.")
+                .path(request.getRequestURI())
+                .timestamp(LocalDateTime.now())
+                .build();
+
+        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(error);
     }
 }

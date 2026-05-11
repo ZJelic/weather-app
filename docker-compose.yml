@@ -6,11 +6,16 @@ services:
     container_name: weather-redis
     ports:
       - "6379:6379"
-    command: redis-server --appendonly yes
+    # Added --requirepass to enable password authentication
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}
+    environment:
+      # Pass password to container for healthcheck
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
     volumes:
       - redis-data:/data
+    # Added -a ${REDIS_PASSWORD} to authenticate before ping
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
       interval: 5s
       timeout: 3s
       retries: 5
@@ -26,6 +31,8 @@ services:
       - SPRING_PROFILES_ACTIVE=prod
       - SPRING_DATA_REDIS_HOST=redis
       - SPRING_DATA_REDIS_PORT=6379
+      # Added Redis password for Spring Boot to connect
+      - SPRING_DATA_REDIS_PASSWORD=${REDIS_PASSWORD}
       - SPRING_DATASOURCE_URL=jdbc:h2:mem:weatherdb
     depends_on:
       redis:

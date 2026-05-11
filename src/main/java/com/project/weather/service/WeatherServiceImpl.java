@@ -23,9 +23,9 @@ public class WeatherServiceImpl implements WeatherService {
     private final OpenMeteoClient weatherClient;
 
     @Override
-    @CircuitBreaker(name = "weather-api", fallbackMethod = "fallbackWeather")  // ← FIRST
-    @Retry(name = "weather-api")  // ← SECOND
-    @Cacheable(value = "weather", key = "#cityName", unless = "#result == null")  // ← LAST
+    @CircuitBreaker(name = "weather-api", fallbackMethod = "fallbackWeather")  // FIRST
+    @Retry(name = "weather-api")  // SECOND
+    @Cacheable(value = "weather", key = "#cityName", unless = "#result == null")  // LAST
     public WeatherResponse getCurrentWeather(String cityName) {
         log.info("CACHE MISS - Calling external API for: {}", cityName);
 

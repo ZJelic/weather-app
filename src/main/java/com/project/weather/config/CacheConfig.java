@@ -32,9 +32,7 @@ public class CacheConfig {
     @Value("${spring.cache.caffeine.spec:maximumSize=1000,expireAfterWrite=300s}")
     private String caffeineSpec;
 
-    /**
-     * Configure ObjectMapper to handle Java 8 dates and type information
-     */
+     // Configure ObjectMapper to handle Java 8 dates and type information
     private ObjectMapper createObjectMapper() {
         PolymorphicTypeValidator ptv = BasicPolymorphicTypeValidator.builder()
                 .allowIfSubType("com.project.weather.dto")
@@ -46,11 +44,10 @@ public class CacheConfig {
         return mapper;
     }
 
-    /**
-     * Primary cache manager: Redis (for production)
-     */
+     // Primary cache manager: Redis (for production)
     @Bean
     @Primary
+    @Profile("prod")
     public CacheManager redisCacheManager(RedisConnectionFactory redisConnectionFactory) {
         GenericJackson2JsonRedisSerializer serializer = new GenericJackson2JsonRedisSerializer(createObjectMapper());
 
@@ -66,9 +63,8 @@ public class CacheConfig {
                 .build();
     }
 
-    /**
-     * Fallback cache manager: Caffeine (in-memory)
-     */
+
+     // Fallback cache manager: Caffeine (in-memory)
     @Bean
     @Profile({"dev", "default"})
     public CacheManager caffeineCacheManager() {
