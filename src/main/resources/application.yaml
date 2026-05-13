@@ -77,7 +77,6 @@ logging:
     org.springframework.context: DEBUG
   pattern:
     console: "%d{ISO8601} [%thread] %-5level [%X{correlationId}] %logger{36} - %msg%n"
-
 ---
 spring:
   config:
@@ -85,6 +84,8 @@ spring:
       on-profile: dev
   cache:
     type: caffeine  # No Redis, in-memory only
+  api:
+    key: ${API_KEY:default-dev-key-123}
 ---
 spring:
   config:
@@ -103,3 +104,5 @@ spring:
           max-active: 10
           max-idle: 5
           min-idle: 2
+  api:
+    key: ${API_KEY:default-prod-key-123}
